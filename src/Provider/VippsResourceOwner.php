@@ -11,7 +11,6 @@ use League\OAuth2\Client\Tool\ArrayAccessorTrait;
  */
 class VippsResourceOwner implements ResourceOwnerInterface
 {
-
     use ArrayAccessorTrait;
 
     /**
@@ -40,18 +39,26 @@ class VippsResourceOwner implements ResourceOwnerInterface
     }
 
     /**
-     * Get resource owner id.
-     *
-     * @return string|null
-     *   owner id.
+     * {@inheritdoc}
      */
     public function getId()
+    {
+        return $this->getSub();
+    }
+
+    /**
+     * Gets sid (session id) value.
+     *
+     * @return string|null
+     *  Current sid.
+     */
+    public function getSid()
     {
         return $this->getValueByKey($this->response, 'sid');
     }
 
     /**
-     * Get resource owner sub.
+     * Gets sub (owner id) value.
      *
      * @return string|null
      *   Owner sub.

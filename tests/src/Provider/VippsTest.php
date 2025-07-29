@@ -3,7 +3,9 @@
 namespace League\OAuth2\Client\Test\Provider;
 
 use GuzzleHttp\Psr7\Utils;
+use League\OAuth2\Client\Provider\AddressData;
 use League\OAuth2\Client\Provider\Vipps;
+use League\OAuth2\Client\Provider\VippsResourceOwner;
 use League\OAuth2\Client\Tool\QueryBuilderTrait;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -91,7 +93,16 @@ class VippsTest extends TestCase
         $lastname = uniqid();
         $name = $firstname . ' ' . $lastname;
         $phone = uniqid();
-        $userId = rand(1000,9999);
+        $sid = rand(1000,9999);
+        $userId = uniqid();
+        $userAddress = json_encode([
+            'address_type' => 'home',
+            'country' => 'NO',
+            'formatted' => "Brettevilles gate 5\n0481\nOslo\nNO",
+            'postal_code' => '0481',
+            'region' => 'Oslo',
+            'street_address' => 'Brettevilles gate 5',
+        ]);
 
         $postResponse = m::mock('Psr\Http\Message\ResponseInterface');
         $postBody = Utils::streamFor('{"access_token":"mock_access_token","expires_in":3600,"id_token":"mock_id_token","scope":"","token_type":"Bearer"}');
@@ -100,7 +111,7 @@ class VippsTest extends TestCase
         $postResponse->shouldReceive('getStatusCode')->andReturn(200);
 
         $userResponse = m::mock('Psr\Http\Message\ResponseInterface');
-        $userBody = Utils::streamFor('{"sid": '.$userId.', "name": "'.$name.'", "given_name": "'.$firstname.'", "family_name": "'.$lastname.'", "phone_number": "'.$phone.'", "email": "'.$email.'", "email_verified": "1"}');
+        $userBody = Utils::streamFor('{"sid": "'.$sid.'", "sub": "'.$userId.'", "name": "'.$name.'", "given_name": "'.$firstname.'", "family_name": "'.$lastname.'", "phone_number": "'.$phone.'", "email": "'.$email.'", "email_verified": "1", "address": '.$userAddress.'}');
         $userResponse->shouldReceive('getBody')->andReturn($userBody);
         $userResponse->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
         $userResponse->shouldReceive('getStatusCode')->andReturn(200);
@@ -114,6 +125,7 @@ class VippsTest extends TestCase
         $token = $this->provider->getAccessToken('authorization_code', ['code' => 'mock_authorization_code']);
         $user = $this->provider->getResourceOwner($token);
 
+        $this->assertTrue($user instanceof VippsResourceOwner);
         $this->assertEquals($email, $user->getEmail());
         $this->assertEquals($email, $user->toArray()['email']);
         $this->assertEquals($firstname, $user->getFirstName());
@@ -125,6 +137,11 @@ class VippsTest extends TestCase
         $this->assertEquals($name, $user->getName());
         $this->assertEquals($name, $user->toArray()['name']);
         $this->assertEquals($userId, $user->getId());
-        $this->assertEquals($userId, $user->toArray()['sid']);
+        $this->assertEquals($userId, $user->toArray()['sub']);
+        $this->assertEquals($sid, $user->getSid());
+        $this->assertEquals($sid, $user->toArray()['sid']);
+
+        $address = $user->getAddress();
+        $this->assertTrue($address instanceof AddressData);
     }
 }
