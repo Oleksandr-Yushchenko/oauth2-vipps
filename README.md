@@ -56,7 +56,7 @@ if (!isset($_GET['code'])) {
         $user = $provider->getResourceOwner($token);
 
         // Use these details to create a new profile
-        printf('Hello %s!', $user->getFirstname());
+        printf('Hello %s!', $user->getFirstName());
 
     } catch (Exception $e) {
 
@@ -71,9 +71,9 @@ if (!isset($_GET['code'])) {
 
 ## Credits
 
-- [Oleksandr Yushchenko](https://github.com/Oleksandr-Yushchenko)
+- [Oleksandr Yushchenko](https://github.com/oleksandr-yushchenko)
 - [All Contributors](https://github.com/Oleksandr-Yushchenko/oauth2-vipps/contributors)
 
 ## License
 
-The MIT License (MIT). Please see [License File](https://github.com/Oleksandr-Yushchenko/oauth2-vipps/blob/master/LICENSE) for more information.
+The MIT License (MIT). Please see [License File](https://github.com/oleksandr-yushchenko/oauth2-vipps/blob/master/LICENSE) for more information.
