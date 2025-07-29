@@ -147,4 +147,22 @@ class AddressData
     {
         return $this->streetAddress;
     }
+
+    /**
+     * Return all of the address data available as an array.
+     *
+     * @return array
+     *   Response array.
+     */
+    public function toArray(): array
+    {
+        return [
+            'address_type' => $this->getAddressType(),
+            'country' => $this->getCountry(),
+            'formatted' => $this->getFormatted(),
+            'postal_code' => $this->getPostalCode(),
+            'region' => $this->getRegion(),
+            'street_address' => $this->getStreetAddress(),
+        ];
+    }
 }
