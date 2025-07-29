@@ -70,7 +70,6 @@ class Vipps extends AbstractProvider
     {
         parent::__construct($options, $collaborators);
         $this->setOptionProvider(new VippsAuthOptionProvider());
-        $this->testMode = boolval($options['testMode']);
     }
 
     /**
@@ -168,11 +167,9 @@ class Vipps extends AbstractProvider
     protected function checkResponse(ResponseInterface $response, $data)
     {
         if ($response->getStatusCode() >= 400) {
-            throw VippsIdentityProviderException::clientException($response,
-                $data);
+            throw VippsIdentityProviderException::clientException($response, $data);
         } elseif (isset($data['error'])) {
-            throw VippsIdentityProviderException::oauthException($response,
-                $data);
+            throw VippsIdentityProviderException::oauthException($response, $data);
         }
     }
 
@@ -296,5 +293,4 @@ class Vipps extends AbstractProvider
 
         return parent::getAccessToken($grant, $options);
     }
-
 }

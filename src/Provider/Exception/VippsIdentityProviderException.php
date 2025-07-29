@@ -63,8 +63,6 @@ class VippsIdentityProviderException extends IdentityProviderException
         ResponseInterface $response,
         $message = null
     ) {
-        return new static($message, $response->getStatusCode(),
-            (string)$response->getBody());
+        return new static($message, $response->getStatusCode(), (string)$response->getBody());
     }
-
 }

@@ -223,5 +223,4 @@ class VippsResourceOwner implements ResourceOwnerInterface
             throw new EmailNotVerifiedException("Email is not verified");
         }
     }
-
 }

@@ -147,5 +147,4 @@ class AddressData
     {
         return $this->streetAddress;
     }
-
 }

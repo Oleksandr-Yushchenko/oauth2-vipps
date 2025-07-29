@@ -54,5 +54,4 @@ class VippsAuthOptionProvider implements OptionProviderInterface
     {
         return urldecode($this->buildQueryString($params));
     }
-
 }
