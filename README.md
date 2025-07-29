@@ -6,7 +6,7 @@ This package provides Vipps OAuth 2.0 support for the PHP League's [OAuth 2.0 Cl
 To install, use composer:
 
 ```
-composer require Oleksandr-Yushchenko/oauth2-vipps
+composer require oleksandr-yushchenko/oauth2-vipps
 ```
 
 ## Usage
