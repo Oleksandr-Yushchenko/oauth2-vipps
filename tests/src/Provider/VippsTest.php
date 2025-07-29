@@ -2,11 +2,16 @@
 
 namespace League\OAuth2\Client\Test\Provider;
 
+use GuzzleHttp\Psr7\Utils;
 use League\OAuth2\Client\Provider\Vipps;
+use League\OAuth2\Client\Tool\QueryBuilderTrait;
+use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
 class VippsTest extends TestCase
 {
+    use QueryBuilderTrait;
+
     const CLIENT_ID = 'XXXXXXXXX';
     const CLIENT_SECRET = 'YYYYYYYYY';
     const REDIRECT_URI = 'https://example.com/connect/check';
@@ -47,5 +52,79 @@ class VippsTest extends TestCase
         $this->assertArrayHasKey('response_type', $query);
         $this->assertArrayHasKey('approval_prompt', $query);
         $this->assertNotNull($this->provider->getState());
+    }
+
+    public function testScopes()
+    {
+        $scopeSeparator = '+';
+        $options = ['scope' => [uniqid(), uniqid()]];
+        $query = ['scope' => implode($scopeSeparator, $options['scope'])];
+        $url = $this->provider->getAuthorizationUrl($options);
+        $encodedScope = urldecode($this->buildQueryString($query));
+        $this->assertNotFalse(strpos($url, $encodedScope));
+    }
+
+    public function testGetAccessToken()
+    {
+        $response = m::mock('Psr\Http\Message\ResponseInterface');
+        $body = Utils::streamFor('{"access_token":"mock_access_token","expires_in":3600,"id_token":"mock_id_token","scope":"","token_type":"Bearer"}');
+        $response->shouldReceive('getBody')->andReturn($body);
+        $response->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
+        $response->shouldReceive('getStatusCode')->andReturn(200);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client->shouldReceive('send')->times(1)->andReturn($response);
+        $this->provider->setHttpClient($client);
+
+        $token = $this->provider->getAccessToken('authorization_code', ['code' => 'mock_authorization_code']);
+
+        $this->assertEquals('mock_access_token', $token->getToken());
+        $this->assertLessThanOrEqual(time() + 3600, $token->getExpires());
+        $this->assertGreaterThanOrEqual(time(), $token->getExpires());
+        $this->assertNull($token->getResourceOwnerId());
+    }
+
+    public function testUserData()
+    {
+        $email = uniqid();
+        $firstname = uniqid();
+        $lastname = uniqid();
+        $name = $firstname . ' ' . $lastname;
+        $phone = uniqid();
+        $userId = rand(1000,9999);
+
+        $postResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $postBody = Utils::streamFor('{"access_token":"mock_access_token","expires_in":3600,"id_token":"mock_id_token","scope":"","token_type":"Bearer"}');
+        $postResponse->shouldReceive('getBody')->andReturn($postBody);
+        $postResponse->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
+        $postResponse->shouldReceive('getStatusCode')->andReturn(200);
+
+        $userResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $userBody = Utils::streamFor('{"sid": '.$userId.', "name": "'.$name.'", "given_name": "'.$firstname.'", "family_name": "'.$lastname.'", "phone_number": "'.$phone.'", "email": "'.$email.'", "email_verified": "1"}');
+        $userResponse->shouldReceive('getBody')->andReturn($userBody);
+        $userResponse->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
+        $userResponse->shouldReceive('getStatusCode')->andReturn(200);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client->shouldReceive('send')
+            ->times(2)
+            ->andReturn($postResponse, $userResponse);
+        $this->provider->setHttpClient($client);
+
+        $token = $this->provider->getAccessToken('authorization_code', ['code' => 'mock_authorization_code']);
+        $user = $this->provider->getResourceOwner($token);
+
+        $this->assertEquals($email, $user->getEmail());
+        $this->assertEquals($email, $user->toArray()['email']);
+        $this->assertEquals($firstname, $user->getFirstName());
+        $this->assertEquals($firstname, $user->toArray()['given_name']);
+        $this->assertEquals($lastname, $user->getLastName());
+        $this->assertEquals($lastname, $user->toArray()['family_name']);
+        $this->assertEquals($phone, $user->getPhoneNumber());
+        $this->assertEquals($phone, $user->toArray()['phone_number']);
+        $this->assertEquals($name, $user->getName());
+        $this->assertEquals($name, $user->toArray()['name']);
+        $this->assertEquals($userId, $user->getId());
+        $this->assertEquals($userId, $user->toArray()['sid']);
     }
 }
