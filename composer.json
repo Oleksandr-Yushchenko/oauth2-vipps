@@ -1,0 +1,27 @@
+{
+    "name": "oleksandr-yushchenko/oauth2-vipps",
+    "description": "Sign in with Vipps OAuth 2.0 Client Provider for The PHP League OAuth2-Client",
+    "license": "MIT",
+    "keywords": [
+        "oauth",
+        "oauth2",
+        "client",
+        "authorization",
+        "authorisation",
+        "vipps",
+        "sign-in-with-vipps"
+    ],
+    "require": {
+        "league/oauth2-client": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "League\\OAuth2\\Client\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "League\\OAuth2\\Client\\Test\\": "test/src/"
+        }
+    }
+}
